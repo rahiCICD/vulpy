@@ -3,8 +3,7 @@ name: "SemGrep Analysis Workflow"
 on:
   push:
     branches:
-      - main  # Change this to the appropriate branch if needed
-
+      - master
 jobs:
   semgrep_analysis:
     runs-on: ubuntu-latest
