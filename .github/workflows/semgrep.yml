@@ -1,31 +1,43 @@
-name: "SemGrep Analysis Workflow"
+name: Code Scanning
 
 on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
+
 jobs:
-  semgrep_analysis:
+  code-scanning:
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Git :: Checkout"
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: "Setup Python"
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
+      - name: Setup Semgrep
+        uses: returntocorp/semgrep-action@v1
 
-      - name: "SemGrep :: Analysis"
-        continue-on-error: true
+      - name: Run Semgrep
+        run: semgrep --config=p/security-audit /path/to/code
+
+      - name: Setup CodeQL
+        uses: github/codeql-action/setup@v1
+
+      - name: Build CodeQL database
         run: |
-          pip install semgrep
-          semgrep ci --exclude-rule yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha --json > semgrep_results.json
-        shell: bash
+          codeql database create codeql-db --language=python
+          codeql database analyze codeql-db /path/to/code
 
-      - name: "Upload Analysis Results"
+      - name: Upload Semgrep results
         uses: actions/upload-artifact@v2
         with:
           name: semgrep-results
-          path: semgrep_results.json
+          path: semgrep-results.json
+
+      - name: Upload CodeQL results
+        uses: actions/upload-artifact@v2
+        with:
+          name: codeql-results
+          path: codeql-results.sarif
