@@ -3,7 +3,7 @@ name: malware_scan
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
   clamav_scan:
